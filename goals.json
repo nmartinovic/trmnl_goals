@@ -1,0 +1,19 @@
+{
+  "weekly": {
+    "header": "Weekly Goals",
+    "content": [
+      "Complete Manager Review",
+      "Finish Dynamic Alerts",
+      "Work on Career Opportunities",
+      "Formalize follow-up on BE Survey"
+    ]
+  },
+  "monthly": {
+    "header": "Monthly Goals",
+    "content": [
+      "Complete Dynamic Thresholds for CMS + RM",
+      "Determine team and individual goals for 2025",
+      "Start meeting with people on Criteo position change"
+    ]
+  }
+}
