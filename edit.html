@@ -31,14 +31,12 @@
             font-weight: bold;
             margin-bottom: 5px;
         }
-        textarea {
+        input[type="text"] {
             width: 100%;
-            height: 100px;
             padding: 10px;
             font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 4px;
-            resize: none;
         }
         button {
             display: block;
@@ -59,67 +57,86 @@
 <body>
     <h1>Edit Goals</h1>
     <div class="form-container">
-        <div class="form-group">
-            <label for="weekly-header">Weekly Goals Header</label>
-            <input type="text" id="weekly-header" placeholder="Enter Weekly Goals Header">
-        </div>
-        <div class="form-group">
-            <label for="weekly-content">Weekly Goals (one per line)</label>
-            <textarea id="weekly-content"></textarea>
-        </div>
-        <div class="form-group">
-            <label for="monthly-header">Monthly Goals Header</label>
-            <input type="text" id="monthly-header" placeholder="Enter Monthly Goals Header">
-        </div>
-        <div class="form-group">
-            <label for="monthly-content">Monthly Goals (one per line)</label>
-            <textarea id="monthly-content"></textarea>
-        </div>
-        <button id="save-goals">Save Goals</button>
+        <form id="edit-form">
+            <div class="form-group">
+                <label for="weekly-header">Weekly Goals Header</label>
+                <input type="text" id="weekly-header" value="Weekly Goals">
+            </div>
+            <div class="form-group">
+                <label for="weekly-content">Weekly Goals (comma-separated)</label>
+                <input type="text" id="weekly-content" value="Goal 1, Goal 2, Goal 3">
+            </div>
+            <div class="form-group">
+                <label for="monthly-header">Monthly Goals Header</label>
+                <input type="text" id="monthly-header" value="Monthly Goals">
+            </div>
+            <div class="form-group">
+                <label for="monthly-content">Monthly Goals (comma-separated)</label>
+                <input type="text" id="monthly-content" value="Goal A, Goal B, Goal C">
+            </div>
+            <button type="submit">Update Goals</button>
+        </form>
     </div>
-    <script>
-        // Load the current goals into the form
-        async function loadGoals() {
-            try {
-                const response = await fetch('goals.json');
-                const data = await response.json();
-                document.getElementById('weekly-header').value = data.weekly.header;
-                document.getElementById('weekly-content').value = data.weekly.content.join('\\n');
-                document.getElementById('monthly-header').value = data.monthly.header;
-                document.getElementById('monthly-content').value = data.monthly.content.join('\\n');
-            } catch (error) {
-                console.error('Failed to load goals:', error);
-            }
-        }
 
-        // Save the updated goals to goals.json
-        async function saveGoals() {
+    <script>
+        document.getElementById('edit-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const weeklyHeader = document.getElementById('weekly-header').value;
+            const weeklyContent = document.getElementById('weekly-content').value.split(',');
+            const monthlyHeader = document.getElementById('monthly-header').value;
+            const monthlyContent = document.getElementById('monthly-content').value.split(',');
+
             const updatedGoals = {
-                weekly: {
-                    header: document.getElementById('weekly-header').value,
-                    content: document.getElementById('weekly-content').value.split('\\n')
-                },
-                monthly: {
-                    header: document.getElementById('monthly-header').value,
-                    content: document.getElementById('monthly-content').value.split('\\n')
-                }
+                weekly: { header: weeklyHeader, content: weeklyContent },
+                monthly: { header: monthlyHeader, content: monthlyContent },
             };
 
+            const GITHUB_TOKEN = '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'; // Replace with your token
+            const REPO_OWNER = 'nmartinovic';
+            const REPO_NAME = 'trmnl_goals';
+            const FILE_PATH = 'goals.json';
+
             try {
-                await fetch('goals.json', {
-                    method: 'PUT', // Adjust method depending on the server setup
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedGoals)
-                });
-                alert('Goals saved successfully!');
+                const getShaResponse = await fetch(
+                    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${GITHUB_TOKEN}`
+                        }
+                    }
+                );
+
+                if (!getShaResponse.ok) throw new Error('Failed to get SHA of the file.');
+
+                const { sha } = await getShaResponse.json();
+
+                const response = await fetch(
+                    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            Authorization: `Bearer ${GITHUB_TOKEN}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: 'Update goals',
+                            content: btoa(JSON.stringify(updatedGoals, null, 2)), // Encode content in base64
+                            sha: sha,
+                        }),
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`GitHub API error: ${response.statusText}`);
+                }
+
+                alert('Goals updated successfully!');
             } catch (error) {
-                console.error('Failed to save goals:', error);
+                console.error('Error updating goals:', error);
+                alert('Failed to update goals.');
             }
-        }
-
-        document.getElementById('save-goals').addEventListener('click', saveGoals);
-
-        loadGoals();
+        });
     </script>
 </body>
 </html>
