@@ -1,73 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Goals Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+<script>
+    async function loadGoals() {
+        try {
+            const response = await fetch('goals.json');
+            const data = await response.json();
+
+            // Update Weekly Goals
+            document.getElementById('weekly-header').textContent = data.weekly.header;
+            const weeklyList = document.getElementById('weekly-content');
+            weeklyList.innerHTML = '';
+            data.weekly.content.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                weeklyList.appendChild(li);
+            });
+
+            // Update Monthly Goals
+            document.getElementById('monthly-header').textContent = data.monthly.header;
+            const monthlyList = document.getElementById('monthly-content');
+            monthlyList.innerHTML = '';
+            data.monthly.content.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                monthlyList.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Failed to load goals:', error);
         }
-        .container {
-            width: 800px;
-            height: 480px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 20px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        .column {
-            background-color: #f9fafc;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .column h2 {
-            margin: 0 0 10px;
-            font-size: 1.5rem;
-            color: #333;
-        }
-        .column ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-        .column ul li {
-            margin: 10px 0;
-            font-size: 1rem;
-            color: #555;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="column">
-            <h2>Weekly Goals</h2>
-            <ul>
-                <li>Complete Manager Review</li>
-                <li>Finish Dynamic Alerts</li>
-                <li>Work on Career Opportunities</li>
-                <li>Formalize follow-up on BE Survey</li>
-            </ul>
-        </div>
-        <div class="column">
-            <h2>Monthly Goals</h2>
-            <ul>
-                <li>Complete Dynamic Thresholds for CMS + RM</li>
-                <li>Determine team and individual goals for 2025</li>
-                <li>Start meeting with people on Criteo position change</li>
-            </ul>
-        </div>
-    </div>
-</body>
-</html>
+    }
+
+    loadGoals();
+</script>
