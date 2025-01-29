@@ -1,77 +1,146 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Goals Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            width: 800px;
-            height: 480px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 20px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        .column {
-            background-color: #f9fafc;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 25%;
-        }
-        .column h2 {
-            margin: 0 0 10px;
-            font-size: 1.5rem;
-            color: #333;
-        }
-        .column ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-        .column ul li {
-            margin: 10px 0;
-            font-size: 1rem;
-            color: #555;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="column">
-            <h2>Weekly Goals</h2>
-            <ul>
-                <li>Complete Manager Review</li>
-                <li>Finish Dynamic Alerts</li>
-                <li>Work on Career Opportunities</li>
-                <li>Formalize follow-up on BE Survey</li>
-            </ul>
+import React, { useState } from 'react';
+import { PlusCircle, Trash2, Send } from 'lucide-react';
+
+const GoalsManager = () => {
+  const [weeklyGoals, setWeeklyGoals] = useState(['']);
+  const [monthlyGoals, setMonthlyGoals] = useState(['']);
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [status, setStatus] = useState('');
+
+  const handleAddGoal = (type) => {
+    if (type === 'weekly') {
+      setWeeklyGoals([...weeklyGoals, '']);
+    } else {
+      setMonthlyGoals([...monthlyGoals, '']);
+    }
+  };
+
+  const handleRemoveGoal = (type, index) => {
+    if (type === 'weekly') {
+      const newGoals = weeklyGoals.filter((_, i) => i !== index);
+      setWeeklyGoals(newGoals.length ? newGoals : ['']);
+    } else {
+      const newGoals = monthlyGoals.filter((_, i) => i !== index);
+      setMonthlyGoals(newGoals.length ? newGoals : ['']);
+    }
+  };
+
+  const handleGoalChange = (type, index, value) => {
+    if (type === 'weekly') {
+      const newGoals = [...weeklyGoals];
+      newGoals[index] = value;
+      setWeeklyGoals(newGoals);
+    } else {
+      const newGoals = [...monthlyGoals];
+      newGoals[index] = value;
+      setMonthlyGoals(newGoals);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!webhookUrl) {
+      setStatus('https://usetrmnl.com/api/custom_plugins/ac02e520-e3eb-4e1e-9fe0-3fef78687335');
+      return;
+    }
+
+    const filteredWeeklyGoals = weeklyGoals.filter(goal => goal.trim() !== '');
+    const filteredMonthlyGoals = monthlyGoals.filter(goal => goal.trim() !== '');
+
+    const payload = {
+      weekly_goals: filteredWeeklyGoals,
+      monthly_goals: filteredMonthlyGoals
+    };
+
+    try {
+      setStatus('Sending...');
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        setStatus('Goals updated successfully!');
+      } else {
+        setStatus('Error updating goals. Please check your webhook URL.');
+      }
+    } catch (error) {
+      setStatus('Error: ' + error.message);
+    }
+  };
+
+  const renderGoalInputs = (type, goals, setGoals) => (
+    <div className="mb-8">
+      <h2 className="text-xl font-bold mb-4">{type === 'weekly' ? 'Weekly' : 'Monthly'} Goals</h2>
+      {goals.map((goal, index) => (
+        <div key={index} className="flex mb-2">
+          <input
+            type="text"
+            value={goal}
+            onChange={(e) => handleGoalChange(type, index, e.target.value)}
+            placeholder={`Enter ${type} goal`}
+            className="flex-grow p-2 border rounded mr-2"
+          />
+          <button
+            onClick={() => handleRemoveGoal(type, index)}
+            className="p-2 text-red-500 hover:text-red-700"
+            aria-label="Remove goal"
+          >
+            <Trash2 size={20} />
+          </button>
         </div>
-        <div class="column">
-            <h2>Monthly Goals</h2>
-            <ul>
-                <li>Complete Dynamic Thresholds for CMS + RM</li>
-                <li>Determine team and individual goals for 2025</li>
-                <li>Start meeting with people on Criteo position change</li>
-            </ul>
-        </div>
+      ))}
+      <button
+        onClick={() => handleAddGoal(type)}
+        className="flex items-center mt-2 text-blue-500 hover:text-blue-700"
+      >
+        <PlusCircle size={20} className="mr-1" />
+        Add {type} goal
+      </button>
     </div>
-</body>
-</html>
+  );
+
+  return (
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <h1 className="text-2xl font-bold mb-6 text-center">TRMNL Goals Manager</h1>
+      
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2">
+          TRMNL Webhook URL
+        </label>
+        <input
+          type="text"
+          value={webhookUrl}
+          onChange={(e) => setWebhookUrl(e.target.value)}
+          placeholder="Enter your TRMNL webhook URL"
+          className="w-full p-2 border rounded"
+        />
+      </div>
+
+      {renderGoalInputs('weekly', weeklyGoals, setWeeklyGoals)}
+      {renderGoalInputs('monthly', monthlyGoals, setMonthlyGoals)}
+
+      <div className="text-center">
+        <button
+          onClick={handleSubmit}
+          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 flex items-center mx-auto"
+        >
+          <Send size={20} className="mr-2" />
+          Update Goals
+        </button>
+        {status && (
+          <p className={`mt-4 ${
+            status.includes('Error') ? 'text-red-500' : 
+            status.includes('success') ? 'text-green-500' : 'text-blue-500'
+          }`}>
+            {status}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default GoalsManager;
