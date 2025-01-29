@@ -25,16 +25,13 @@
             background-color: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
+            margin-top: 25%; /* Moves content down the page */
         }
         .column {
             background-color: #f9fafc;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 25%;
         }
         .column h2 {
             margin: 0 0 10px;
@@ -51,62 +48,27 @@
             font-size: 1rem;
             color: #555;
         }
-        .edit-link {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            text-decoration: none;
-            color: #007bff;
-            font-size: 0.9rem;
-        }
     </style>
 </head>
 <body>
-    <a href="edit.html" class="edit-link">Edit Goals</a>
     <div class="container">
-        <div class="column" id="weekly-column">
-            <h2 id="weekly-header">Weekly Goals</h2>
-            <ul id="weekly-content"></ul>
+        <div class="column">
+            <h2>Weekly Goals</h2>
+            <ul>
+                <li>Complete Manager Review</li>
+                <li>Finish Dynamic Alerts</li>
+                <li>Work on Career Opportunities</li>
+                <li>Formalize follow-up on BE Survey</li>
+            </ul>
         </div>
-        <div class="column" id="monthly-column">
-            <h2 id="monthly-header">Monthly Goals</h2>
-            <ul id="monthly-content"></ul>
+        <div class="column">
+            <h2>Monthly Goals</h2>
+            <ul>
+                <li>Complete Dynamic Thresholds for CMS + RM</li>
+                <li>Determine team and individual goals for 2025</li>
+                <li>Start meeting with people on Criteo position change</li>
+            </ul>
         </div>
     </div>
-    <script>
-        // Load goals from goals.json
-        async function loadGoals() {
-    try {
-        const response = await fetch('goals.json');
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        const data = await response.json();
-
-        // Safely update Weekly Goals
-        const weeklyHeader = document.getElementById('weekly-header');
-        const weeklyContent = document.getElementById('weekly-content');
-        if (weeklyHeader && weeklyContent) {
-            weeklyHeader.textContent = data.weekly.header;
-            weeklyContent.innerHTML = data.weekly.content.map(item => `<li>${item}</li>`).join('');
-        } else {
-            console.error('Weekly goals elements are missing in the DOM.');
-        }
-
-        // Safely update Monthly Goals
-        const monthlyHeader = document.getElementById('monthly-header');
-        const monthlyContent = document.getElementById('monthly-content');
-        if (monthlyHeader && monthlyContent) {
-            monthlyHeader.textContent = data.monthly.header;
-            monthlyContent.innerHTML = data.monthly.content.map(item => `<li>${item}</li>`).join('');
-        } else {
-            console.error('Monthly goals elements are missing in the DOM.');
-        }
-    } catch (error) {
-        console.error('Failed to load goals:', error);
-    }
-}
-
-loadGoals();
-
-    </script>
 </body>
 </html>
